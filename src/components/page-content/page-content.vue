@@ -3,9 +3,9 @@
     <!-- 1.头部 -->
     <div class="header">
       <h3>{{ contentConfig?.header?.title ?? '数据列表' }}</h3>
-      <template v-if="!!contentConfig.header.btnTitle">
+      <template v-if="isCreate">
         <el-button type="primary" @click="handleNewUserClick">
-          {{ contentConfig.header?.btnTitle }}
+          {{ contentConfig?.header?.btnTitle ?? '新建数据' }}
         </el-button>
       </template>
     </div>
@@ -24,6 +24,7 @@
             <el-table-column align="center" v-bind="item">
               <template #default="scope">
                 <el-button
+                  v-if="isUpdate"
                   size="small"
                   icon="Edit"
                   type="primary"
@@ -33,6 +34,7 @@
                   编辑
                 </el-button>
                 <el-button
+                  v-if="isDelete"
                   size="small"
                   icon="Delete"
                   type="danger"
@@ -60,13 +62,13 @@
     <!-- 3. 分页器 -->
     <div class="pagination">
       <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :page-sizes="[10, 20, 30, 40]"
+        v-model:currentPage="currentPage"
+        v-model:pageSize="pageSize"
+        :pageSizes="[10, 20, 30, 40]"
         layout="total, sizes, prev, pager, next, jumper"
         :total="pageTotalCount"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
+        @update:pageSize="handleSizeChange"
+        @update:currentPage="handleCurrentChange"
       />
     </div>
   </div>
@@ -77,19 +79,11 @@ import useSystemStore from '@/stores/main/system/system'
 import { storeToRefs } from 'pinia'
 import { ref, defineProps, defineEmits } from 'vue'
 import { formatUTC } from '@/utils/format'
-import useLoginStore from '@/stores/main/login/login'
-
-const loginStore = useLoginStore()
-const { permission } = storeToRefs(loginStore)
-const isCreate = ref(permission.value.)
-const isUpdate = ref(false)
-const isDelete = ref(false)
-const isQuery = ref(false)
-
+import usePermission from '@/hooks/usePermissions'
 interface IProps {
   contentConfig: {
     pageName: string
-    header?: {
+    header: {
       title?: string
       btnTitle?: string
     }
@@ -98,6 +92,16 @@ interface IProps {
   }
 }
 const props = defineProps<IProps>()
+
+// #权限(按钮): 创建、编辑、删除、查询
+// 权限判断
+// const permission = usePermission()
+// console.log('permission', permission)
+const isCreate = ref(usePermission(`${props.contentConfig?.pageName}:create`))
+const isUpdate = ref(usePermission(`${props.contentConfig?.pageName}:update`))
+const isDelete = ref(usePermission(`${props.contentConfig?.pageName}:delete`))
+const isQuery = ref(usePermission(`${props.contentConfig?.pageName}:query`))
+//const isQuery = ref(false)
 
 // 1. 发起Action, 请求usersList的数据
 const systemStore = useSystemStore()
@@ -118,6 +122,8 @@ function handleCurrentChange(val: number) {
 
 /** page列表网络请求 */
 function fetchpageistData(formData: any = {}) {
+  if (!isQuery.value) return
+  //获取size/offset
   const size = pageSize.value
   const offset = (currentPage.value - 1) * size
   const pageInfo = { offset, size }

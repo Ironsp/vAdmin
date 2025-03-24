@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { accountLoginRequest, getUserInfoById, getUserMenusByRoleId } from '@/service/login/login'
 import type { IAccount } from '@/types'
 import { localCache } from '@/utils/cache'
-import { mapMenusToRoutes } from '@/utils/map-menus'
+import { mapMenusToPermissions, mapMenusToRoutes } from '@/utils/map-menus'
 import router from '@/router'
 import { LOGIN_TOKEN } from '@/global/constants'
 import { get } from 'vant/lib/utils'
@@ -12,7 +12,7 @@ interface ILoginState {
   token: string
   userInfo: any
   userMenus: any
-  permission: any
+  permission: string[]
 }
 
 const useLoginStore = defineStore('login', {
@@ -42,25 +42,10 @@ const useLoginStore = defineStore('login', {
       this.userMenus = userMenus
       console.log('userMenus菜单: ', userMenus)
 
-      // 获取角色权限标识 permission
-      function menuMapToPermissions(userMenus: any[]) {
-        const permission: string[] = []
-
-        function getMenuPermission(menus: any[]) {
-          for (const menu of menus) {
-            if (menu.type === 1 || menu.type === 2) {
-              getMenuPermission(menu.children ?? [])
-            } else if (menu.type === 3) {
-              permission.push(menu.permission)
-            }
-          }
-        }
-        getMenuPermission(userMenus)
-        return permission
-      }
-      const permission = menuMapToPermissions(userMenus)
+      //#按钮权限: 获取角色权限标识 permission
+      const permission = mapMenusToPermissions(userMenus)
       this.permission = permission
-      console.log('permission权限: ', permission)
+      //console.log('permission权限: ', permission)
 
       // 4.进行本地缓存
       localCache.setCache('userInfo', userInfo)
@@ -83,6 +68,11 @@ const useLoginStore = defineStore('login', {
         this.token = token
         this.userInfo = userInfo
         this.userMenus = userMenus
+
+        //#按钮权限: 获取角色权限标识 permission
+        const permission = mapMenusToPermissions(userMenus)
+        this.permission = permission
+        console.log('premission按钮权限: ', permission)
 
         // 2.动态添加路由
         const routes = mapMenusToRoutes(userMenus)

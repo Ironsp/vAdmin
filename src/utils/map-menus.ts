@@ -65,6 +65,11 @@ interface IBreadcrumbs {
   name: string
   path: string
 }
+/**
+ * 根据路径去匹配需要高亮的菜单
+ * @param path 需要匹配的路径
+ * @param userMenus 所有的菜单
+ */
 export function mapPathToBreadcrumbs(path: string, userMenus: any[]) {
   // 1.定义面包屑
   const breadcrumbs: IBreadcrumbs[] = []
@@ -80,4 +85,20 @@ export function mapPathToBreadcrumbs(path: string, userMenus: any[]) {
     }
   }
   return breadcrumbs
+}
+
+export function mapMenusToPermissions(userMenus: any[]) {
+  const permission: string[] = []
+
+  function getMenuPermission(menus: any[]) {
+    for (const menu of menus) {
+      if (menu.type === 1 || menu.type === 2) {
+        getMenuPermission(menu.children ?? [])
+      } else if (menu.type === 3) {
+        permission.push(menu.permission)
+      }
+    }
+  }
+  getMenuPermission(userMenus)
+  return permission
 }

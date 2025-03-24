@@ -1,17 +1,31 @@
 <template>
   <div class="department">
-    <page-search @queryClick="handleQueryClick" @resetClick="handleResetClick" />
-    <page-modal ref="modalRef" />
-    <page-contant ref="contentRef" @NewUserClick="NewUserClick" @EditBtnClick="EditBtnClick" />
+    <page-search
+      :search-config="searchConfig"
+      @queryClick="handleQueryClick"
+      @resetClick="handleResetClick"
+    />
+    <page-modal :modal-config="modalConfig" ref="modalRef" />
+    <page-contant
+      :content-config="contentConfig"
+      ref="contentRef"
+      @NewUserClick="NewUserClick"
+      @EditBtnClick="EditBtnClick"
+    />
   </div>
 </template>
 
 <script setup lang="ts" name="department">
-import PageSearch from './c-cpns/page-search.vue'
-//import PageSearch from '@/components/page-search/page-search.vue'
 import { ref } from 'vue'
-import PageModal from './c-cpns/page-modal.vue'
-import PageContant from './c-cpns/page-contant.vue'
+
+import PageSearch from '@/components/page-search/page-search.vue'
+import searchConfig from './config/search.config'
+
+import PageModal from '@/components/page-modal/page-modal.vue'
+import modalConfig from './config/modal.config'
+
+import PageContant from '@/components/page-content/page-content.vue'
+import contentConfig from './config/content.config'
 
 const contentRef = ref<any>()
 const modalRef = ref<any>()

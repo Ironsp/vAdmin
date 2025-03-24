@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import useLoginStore from '@/store/modules/login'
+import useLoginStore from '@/stores/login/login'
 
 const loginStore = useLoginStore()
 const { permission } = storeToRefs(loginStore)

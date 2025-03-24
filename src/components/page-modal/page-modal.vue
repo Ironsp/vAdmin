@@ -13,6 +13,17 @@
             <template v-if="item.type === 'custom'">
               <slot :name="item.slotName"></slot>
             </template>
+            <template v-else-if="item.type === 'select'">
+              <el-select
+                v-model="formData[item.prop]"
+                :placeholder="item.placeholder"
+                style="width: 100%"
+              >
+                <template v-for="option in item.options" :key="option.value">
+                  <el-option :label="option.label" :value="option.value" />
+                </template>
+              </el-select>
+            </template>
             <template v-else>
               <el-form-item :label="item.label">
                 <el-input v-model="formData[item.prop]" :placeholder="item.placeholder" />
@@ -64,6 +75,7 @@ for (const item of props.modalConfig.formItems) {
   formData[item.prop] = ''
 }
 
+/** 解释方法: 处理模态框确认按钮点击   */
 function handleConfirmClick() {
   dialogVisible.value = false
 
